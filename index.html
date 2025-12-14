@@ -531,7 +531,7 @@
     }
   }
 
-  // ===== 輸入名字頁（已移除圖片） =====
+  // ===== 輸入名字頁（無圖片） =====
   function renderNameScreen() {
     screen.innerHTML = `
       <div class="question-layout">
@@ -600,7 +600,7 @@
           <button style="margin-top:0;padding-inline:14px;" onclick="startQuiz()">再玩一次</button>
         </div>
 
-        <div class="result-main-card">
+        <div class="result-main-card" id="result-card">
           <div class="result-type-pill">
             讀書：${bestStudy.name}　×　生活：${bestLife.name}
           </div>
@@ -620,20 +620,63 @@
           </div>
 
           <div class="result-bottom-pill">
-            此測驗純屬娛樂，不會記錄個人資料
+            之後可以把這裡改成屬於這個組合的一句 Slogan ✨
           </div>
         </div>
 
         <div class="result-actions">
-          <button onclick="alert('之後可以做成真的產圖功能，現在先當裝飾 ✨')">長按保存圖片</button>
+          <button onclick="saveResultImage()">儲存圖片</button>
           <button onclick="alert('之後可以接分享連結，目前先在清大同學之間自己貼網址就好 😆')">分享</button>
         </div>
       </div>
     `;
   }
 
+  // ===== 把結果卡片存成圖片 =====
+  function saveResultImage() {
+    const card = document.getElementById("result-card");
+    if (!card) return;
+
+    html2canvas(card, {
+      scale: 2,
+      useCORS: true
+    }).then(canvas => {
+      const dataUrl = canvas.toDataURL("image/png");
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        const win = window.open();
+        if (win) {
+          win.document.write(`
+            <html>
+              <head><title>長按儲存圖片</title></head>
+              <body style="margin:0;display:flex;align-items:center;justify-content:center;background:#000;">
+                <img src="${dataUrl}" style="max-width:100%;height:auto;" />
+              </body>
+            </html>
+          `);
+        } else {
+          alert("瀏覽器擋住了彈出視窗，可以檢查一下設定再試一次～");
+        }
+      } else {
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "nthu-personality-result.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    }).catch(err => {
+      console.error(err);
+      alert("產生圖片時出了點問題 QQ 可以再試一次");
+    });
+  }
+
   // 初始畫面
   renderStart();
 </script>
+
+<!-- html2canvas CDN（一定要加在最後，JS 才找得到 html2canvas） -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>
